@@ -1,43 +1,62 @@
 import React, { Component } from 'react';
-import './App.css';
 
 class App extends Component {
   constructor() {
     super();
     this.state = {
-      birthdate: '',
-      age: null,
+      users: [],
+      loading: true,
     };
   }
 
-  calculateAge = () => {
-    const birthdate = new Date(this.state.birthdate);
-    const today = new Date();
-    const ageInMilliseconds = today - birthdate;
-    const ageInYears = ageInMilliseconds / (365 * 24 * 60 * 60 * 1000);
-    this.setState({ age: Math.floor(ageInYears) });
-  };
-
-  handleDateChange = (e) => {
-    this.setState({ birthdate: e.target.value });
-  };
+  componentDidMount() {
+    fetch('https://dummyjson.com/users')
+      .then((response) => response.json())
+      .then((data) => {
+        this.setState({ users: data, loading: false });
+      })
+      .catch((error) => {
+        console.error('Error fetching data:', error);
+        this.setState({ loading: false });
+      });
+  }
 
   render() {
+    const { users, loading } = this.state;
+
     return (
       <div className="App">
-        <h1>Age Calculator</h1>
-        <div className="AgeCalculator">
-          <label>Enter your birthdate:</label>
-          <input
-            type="date"
-            value={this.state.birthdate}
-            onChange={this.handleDateChange}
-          />
-          <button onClick={this.calculateAge}>Calculate Age</button>
-          {this.state.age !== null && (
-            <p>Your age is: {this.state.age} years</p>
-          )}
-        </div>
+        <h1>User Table</h1>
+        {loading ? (
+          <p>Loading...</p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Website</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.isArray(users) && users.length > 0 ? (
+                users.map((user) => (
+                  <tr key={user.id}>
+                    <td>{user.id}</td>
+                    <td>{user.name}</td>
+                    <td>{user.email}</td>
+                    <td>{user.website}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4">No user data available.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
     );
   }
